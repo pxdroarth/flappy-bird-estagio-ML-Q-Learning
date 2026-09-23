@@ -45,7 +45,11 @@ class AgenteQLearning:
         dy = int((jogo.passaro.y + Passaro.TAMANHO[1] - coluna.base_vao) // 10)
         dy = max(-40, min(40, dy))
         vel = int(jogo.passaro.velocidade)
-        return f"{dx},{dy},{vel}"
+        # diferença de altura para a coluna seguinte: ajuda a se preparar
+        # antes de sair do vão (subir ou descer para a próxima)
+        seguinte = jogo.coluna_seguinte()
+        dprox = 0 if seguinte is None else int((seguinte.topo_vao - coluna.topo_vao) // 60)
+        return f"{dx},{dy},{vel},{dprox}"
 
     def escolher_acao(self, estado, treinando=True):
         if treinando and random.random() < self.epsilon:

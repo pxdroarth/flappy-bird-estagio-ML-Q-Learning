@@ -26,6 +26,12 @@ class Jogo:
                 return coluna
         return self.colunas[-1]
 
+    def coluna_seguinte(self):
+        """A coluna depois da próxima (ou None se ainda não existe)."""
+        proxima = self.proxima_coluna()
+        indice = self.colunas.index(proxima)
+        return self.colunas[indice + 1] if indice + 1 < len(self.colunas) else None
+
     def atualizar_colunas(self):
         """F3 - gera colunas automaticamente. F5 - conta pontos."""
         passou = False

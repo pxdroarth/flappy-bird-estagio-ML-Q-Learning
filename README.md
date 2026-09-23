@@ -131,17 +131,30 @@ IA:
   último pulo leva a culpa.
 - **Estado independente da velocidade.** A distância até a coluna é medida em
   frames, então o que a IA aprende continua valendo quando o jogo acelera.
+- **Enxerga a coluna seguinte.** Além da próxima coluna, o estado inclui a
+  diferença de altura para a coluna depois dela, então o pássaro se prepara
+  para subir ou descer antes de sair do vão.
 - **Tabela Q salva em arquivo** e treino sem janela.
 
 ## Resultados
 
-| Partidas de treino | Média de pontos | Recorde |
-|---|---|---|
-| 1.000 | ~0 | 4 |
-| 3.000 | ~9 | 38 |
-| 5.000 | ~10 | 41 |
-| ~20.000 | ~50 | 342 |
+Comparação com 20.000 partidas de treino, antes e depois de a IA enxergar a
+coluna seguinte:
 
-O projeto base relata recorde entre 15 e 30 pontos. A IA melhora bastante mas
-não fica perfeita: com tabela Q ela ainda erra de vez em quando. Um próximo passo
-seria Deep Q-Learning (rede neural no lugar da tabela).
+| Partidas de treino | Média (sem coluna seguinte) | Média (com coluna seguinte) |
+|---|---|---|
+| 5.000 | 12,5 | 12,7 |
+| 10.000 | 18,9 | 24,3 |
+| 15.000 | 33,8 | 39,9 |
+| 20.000 | 51,4 | 142,3 |
+| **Recorde** | 256 | 1000 (limite da partida) |
+
+Sem a coluna seguinte a IA estaciona perto de 50 pontos de média: ela já viu
+quase todas as situações possíveis (cerca de 24 mil estados) e morre na troca
+entre colunas de alturas diferentes. Com a nova informação o número de estados
+dobra, o começo fica um pouco mais lento, mas o resultado final é bem maior.
+
+O limite de 1000 pontos por partida fica em `ia/treino.py` (`LIMITE_PONTOS`) e
+existe só para o treino não rodar para sempre. O projeto base relata recorde
+entre 15 e 30 pontos. Com tabela Q a IA fica muito boa mas nunca perfeita; um
+próximo passo seria Deep Q-Learning (rede neural no lugar da tabela).
