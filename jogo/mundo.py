@@ -3,6 +3,7 @@ import pygame
 
 from jogo import config as c
 from jogo.entidades import Coluna, Passaro
+from jogo.ciclo import ciclo
 from jogo.imagens import Imagens
 
 
@@ -62,8 +63,9 @@ class Jogo:
         return passou, self.fim
 
     def desenhar(self, tela):
+        ciclo.avancar()
         if Imagens.carregadas:
-            tela.blit(Imagens.fundo, (0, 0))
+            ciclo.desenhar_fundo(tela)
         else:
             tela.fill((190, 80, 120))
         for coluna in self.colunas:

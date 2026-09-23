@@ -47,6 +47,7 @@ Treinar a IA sem abrir janela (bem mais rápido):
     │   ├── imagens.py           carrega os PNGs
     │   ├── entidades.py         Passaro e Coluna
     │   ├── mundo.py             regras do jogo (movimento, colisão, pontos)
+    │   ├── ciclo.py             ciclo do dia: troca o fundo entre dia, tarde e noite
     │   └── telas.py             menu, modo jogador e modo IA
     ├── ia/
     │   ├── agente.py            AgenteQLearning (estado, ação, tabela Q)
@@ -77,12 +78,28 @@ as mesmas regras.
 |---|---|---|
 | passaro_1/2/3.png | 34x24 | pássaro azul com topete, asa em 3 posições (animação) |
 | coluna.png | 52x320 | coluna de metal com faixas laranjas (virada para a de cima) |
-| fundo.png | 288x512 | céu de pôr do sol, estrelas, sol e morros |
+| fundo_dia.png | 288x512 | céu azul, sol, nuvens e morros verdes |
+| fundo_tarde.png | 288x512 | céu de pôr do sol, primeiras estrelas, sol baixo |
+| fundo_noite.png | 288x512 | céu escuro, muitas estrelas, lua com crateras |
 | chao.png | 336x112 | grama e terra, emenda nas bordas para rolar sem corte |
 
-Para mudar o visual basta editar as cores em `PALETA` ou as funções de desenho
+Para mudar o visual basta editar as cores em `PALETA` (pássaro, coluna, chão)
+ou em `TEMAS_FUNDO` (céus) ou as funções de desenho
 e rodar o script de novo. Se as imagens não existirem, o jogo roda com formas
 simples no lugar.
+
+## Ciclo do dia
+
+O fundo passa por dia, tarde e noite enquanto o jogo roda, e depois volta ao
+dia. Cada período dura 20 segundos e, nos últimos 4, o fundo seguinte vai
+aparecendo por cima até substituir o atual (transição suave com transparência).
+
+- O tempo conta frames desenhados, não frames de jogo, então o turbo da IA não
+  faz o céu piscar.
+- Existe um ciclo só para o programa inteiro (`ciclo` em `jogo/ciclo.py`), então
+  o céu continua de onde parou ao reiniciar a partida ou trocar de tela.
+- Durações e ordem dos períodos ficam em `jogo/config.py`
+  (`PERIODOS`, `DURACAO_PERIODO`, `DURACAO_TRANSICAO`).
 
 ## Diferenças em relação ao projeto base
 
@@ -92,7 +109,8 @@ Organização:
 |---|---|
 | Tudo em `FlappyBird.py` | Separado em `jogo/` e `ia/`, entrada em `main.py` |
 | Pasta `imgs/` com imagens prontas | `assets/imagens/`, geradas por `ferramentas/gerar_imagens.py` |
-| `bird1.png`, `pipe.png`, `base.png`, `bg.png` | `passaro_1.png`, `coluna.png`, `chao.png`, `fundo.png` |
+| `bird1.png`, `pipe.png`, `base.png`, `bg.png` | `passaro_1.png`, `coluna.png`, `chao.png`, `fundo_dia/tarde/noite.png` |
+| Fundo fixo | Fundo muda entre dia, tarde e noite |
 | Classe `Cano` | Classe `Coluna` |
 | Constantes espalhadas nas classes | Todas em `jogo/config.py` |
 | Nada salvo entre execuções | Recorde e tabela Q em `dados/` |

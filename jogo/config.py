@@ -30,6 +30,11 @@ VELOCIDADE_INICIAL = 5
 VELOCIDADE_FINAL = 10
 PONTOS_POR_NIVEL = 10        # a cada 10 pontos o jogo acelera 1
 
+# Ciclo do dia (dia -> tarde -> noite -> dia ...)
+PERIODOS = ["dia", "tarde", "noite"]
+DURACAO_PERIODO = 20   # segundos que cada período dura
+DURACAO_TRANSICAO = 4  # segundos de transição suave no fim de cada período
+
 # Cores das telas
 BRANCO = (255, 255, 255)
 AMARELO = (255, 230, 90)

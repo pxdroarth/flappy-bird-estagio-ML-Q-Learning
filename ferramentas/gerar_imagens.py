@@ -35,14 +35,6 @@ PALETA = {
     "coluna_escuro": (70, 78, 95),
     "faixa": (230, 120, 60),
     "parafuso": (50, 55, 70),
-    # céu e cenário
-    "ceu_topo": (40, 30, 90),
-    "ceu_meio": (190, 80, 120),
-    "ceu_baixo": (250, 170, 90),
-    "sol": (255, 225, 140),
-    "morro_longe": (120, 60, 110),
-    "morro_perto": (70, 40, 85),
-    "estrela": (255, 245, 220),
     # chão
     "grama": (60, 150, 80),
     "grama_escura": (35, 100, 55),
@@ -123,37 +115,76 @@ def desenhar_coluna():
 
 
 # ----------------------------------------------------------------------------
-# Fundo 288x512
+# Fundos 288x512: dia, tarde e noite (o jogo vai trocando entre eles)
 # ----------------------------------------------------------------------------
+TEMAS_FUNDO = {
+    "dia": {
+        "ceu": [(90, 170, 240), (150, 205, 250), (205, 235, 255)],  # topo, meio, baixo
+        "astro": (255, 245, 180), "astro_pos": (60, 110), "astro_raio": 24,
+        "estrelas": 0, "nuvens": (255, 255, 255),
+        "morro_longe": (110, 175, 130), "morro_perto": (70, 140, 95),
+    },
+    "tarde": {
+        "ceu": [(40, 30, 90), (190, 80, 120), (250, 170, 90)],
+        "astro": (255, 225, 140), "astro_pos": (200, 315), "astro_raio": 30,
+        "estrelas": 40, "nuvens": None,
+        "morro_longe": (120, 60, 110), "morro_perto": (70, 40, 85),
+    },
+    "noite": {
+        "ceu": [(8, 10, 35), (20, 30, 75), (45, 60, 115)],
+        "astro": (235, 235, 215), "astro_pos": (210, 90), "astro_raio": 18,
+        "estrelas": 120, "nuvens": None, "lua": True,
+        "morro_longe": (35, 40, 80), "morro_perto": (20, 22, 50),
+    },
+}
+
+
 def misturar(cor_a, cor_b, t):
     return tuple(int(a + (b - a) * t) for a, b in zip(cor_a, cor_b))
 
 
-def desenhar_fundo():
+def desenhar_fundo(nome_tema):
+    tema = TEMAS_FUNDO[nome_tema]
     s = nova_superficie(288, 512)
-    c = PALETA
     horizonte = 360
+    topo, meio, baixo = tema["ceu"]
 
     # céu em degradê (topo -> meio -> baixo)
     for y in range(512):
         if y < horizonte * 0.55:
-            cor = misturar(c["ceu_topo"], c["ceu_meio"], y / (horizonte * 0.55))
+            cor = misturar(topo, meio, y / (horizonte * 0.55))
         else:
-            t = min(1.0, (y - horizonte * 0.55) / (horizonte * 0.45))
-            cor = misturar(c["ceu_meio"], c["ceu_baixo"], t)
+            cor = misturar(meio, baixo, min(1.0, (y - horizonte * 0.55) / (horizonte * 0.45)))
         pygame.draw.line(s, cor, (0, y), (287, y))
 
-    # estrelas só na parte escura
-    aleatorio = random.Random(7)  # semente fixa: sempre as mesmas estrelas
-    for _ in range(40):
-        x, y = aleatorio.randrange(288), aleatorio.randrange(150)
-        s.set_at((x, y), c["estrela"])
+    # estrelas (semente fixa: sempre nas mesmas posições)
+    aleatorio = random.Random(7)
+    for i in range(tema["estrelas"]):
+        x, y = aleatorio.randrange(288), aleatorio.randrange(260)
+        brilho = aleatorio.randrange(170, 256)
+        s.set_at((x, y), (brilho, brilho, min(255, brilho + 20)))
+        if i % 15 == 0:  # algumas estrelas maiores em cruz
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                s.set_at((x + dx, y + dy), (brilho, brilho, brilho))
 
-    # sol com anéis
-    for raio, alfa in ((46, 40), (38, 80), (30, 255)):
-        halo = nova_superficie(100, 100)
-        pygame.draw.circle(halo, (*c["sol"], alfa), (50, 50), raio)
-        s.blit(halo, (150, horizonte - 95))
+    # sol ou lua com brilho em volta
+    ax, ay = tema["astro_pos"]
+    raio = tema["astro_raio"]
+    halo = nova_superficie(raio * 4, raio * 4)
+    for r, alfa in ((raio * 1.6, 35), (raio * 1.3, 70), (raio, 255)):
+        pygame.draw.circle(halo, (*tema["astro"], alfa), (raio * 2, raio * 2), int(r))
+    if tema.get("lua"):  # crateras da lua
+        cratera = misturar(tema["astro"], (150, 150, 140), 0.5)
+        for cx, cy, cr in ((-5, -4, 4), (6, 3, 3), (-2, 7, 2)):
+            pygame.draw.circle(halo, cratera, (raio * 2 + cx, raio * 2 + cy), cr)
+    s.blit(halo, (ax - raio * 2, ay - raio * 2))
+
+    # nuvens (só de dia): cada nuvem são alguns círculos sobrepostos
+    if tema["nuvens"]:
+        for nx, ny, escala in ((150, 80, 1.0), (40, 190, 0.8), (210, 230, 1.2)):
+            for dx, dy, r in ((0, 0, 12), (14, -6, 14), (30, 0, 11), (15, 5, 12)):
+                pygame.draw.circle(s, tema["nuvens"],
+                                   (int(nx + dx * escala), int(ny + dy * escala)), int(r * escala))
 
     # morros (duas camadas de ondas)
     def morros(cor, base, amplitude, frequencia, fase):
@@ -165,8 +196,8 @@ def desenhar_fundo():
         pontos.append((288, 512))
         pygame.draw.polygon(s, cor, pontos)
 
-    morros(c["morro_longe"], horizonte, 50, 0.025, 1.0)
-    morros(c["morro_perto"], horizonte + 30, 35, 0.04, 3.0)
+    morros(tema["morro_longe"], horizonte, 50, 0.025, 1.0)
+    morros(tema["morro_perto"], horizonte + 30, 35, 0.04, 3.0)
     return s
 
 
@@ -204,7 +235,9 @@ def main():
         "passaro_2.png": desenhar_passaro("meio"),
         "passaro_3.png": desenhar_passaro("baixo"),
         "coluna.png": desenhar_coluna(),
-        "fundo.png": desenhar_fundo(),
+        "fundo_dia.png": desenhar_fundo("dia"),
+        "fundo_tarde.png": desenhar_fundo("tarde"),
+        "fundo_noite.png": desenhar_fundo("noite"),
         "chao.png": desenhar_chao(),
     }
     for nome, superficie in imagens.items():
