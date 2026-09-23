@@ -2,64 +2,128 @@
 
 Projeto de estágio. Equipe: Pedro Arthur, Leone, Davi Marques, Paulo.
 
-Baseado no projeto de Stalone Augusto:
-https://github.com/HardWareGCR/FlappyBirdQLearning-01656165-StaloneAugusto
+Jogo no estilo Flappy Bird feito em Python com Pygame. Tem dois modos: um em que
+a pessoa joga e outro em que o pássaro aprende a jogar sozinho com Q-Learning.
+Todas as imagens são geradas por código pela própria equipe
+(`ferramentas/gerar_imagens.py`).
+
+A parte de IA partiu do projeto de Stalone Augusto
+(https://github.com/HardWareGCR/FlappyBirdQLearning-01656165-StaloneAugusto),
+com correções e mudanças descritas no fim deste arquivo.
 
 ## Como rodar
 
     pip install -r requirements.txt
-    python flappy_bird.py
+    python ferramentas/gerar_imagens.py   # só na primeira vez
+    python main.py
 
-Para usar as imagens do jogo, copie a pasta `imgs` do projeto base para esta
-pasta. Sem ela o jogo roda com formas simples no lugar das imagens.
+Treinar a IA sem abrir janela (bem mais rápido):
 
-## Modos
+    python main.py --treinar 20000
 
-1. **Jogar**: ESPAÇO, seta pra cima ou clique para voar. A cada 10 pontos os
-   canos ficam mais rápidos. O recorde fica salvo em `recorde.txt`.
-2. **IA**: o pássaro aprende sozinho. Teclas: T liga/desliga o turbo (treina
-   sem desenhar cada frame), G mostra o gráfico de evolução, I esconde as
-   informações, ESC volta ao menu. O aprendizado fica salvo em `tabela_q.json`
-   e continua de onde parou.
+## Controles
 
-Treino rápido sem janela:
+| Tela | Tecla | Ação |
+|---|---|---|
+| Menu | 1 / 2 / ESC | Jogar / ver a IA / sair |
+| Jogar | ESPAÇO, seta pra cima ou clique | Voar |
+| Jogar | ESC | Voltar ao menu |
+| IA | T | Turbo: treina várias partidas sem desenhar cada frame |
+| IA | G | Gráfico da evolução dos pontos |
+| IA | I | Mostrar/esconder informações |
+| IA | ESC | Salvar e voltar ao menu |
 
-    python flappy_bird.py --treinar 20000
+## Estrutura do projeto
+
+    flappy_bird/
+    ├── main.py                  ponto de entrada (menu ou --treinar)
+    ├── requirements.txt
+    ├── assets/
+    │   └── imagens/             PNGs gerados pelo script abaixo
+    ├── ferramentas/
+    │   └── gerar_imagens.py     desenha todas as imagens por código
+    ├── jogo/
+    │   ├── config.py            todas as constantes (tela, física, dificuldade, pastas)
+    │   ├── imagens.py           carrega os PNGs
+    │   ├── entidades.py         Passaro e Coluna
+    │   ├── mundo.py             regras do jogo (movimento, colisão, pontos)
+    │   └── telas.py             menu, modo jogador e modo IA
+    ├── ia/
+    │   ├── agente.py            AgenteQLearning (estado, ação, tabela Q)
+    │   └── treino.py            partidas da IA e treino sem janela
+    └── dados/                   recorde e tabela Q salvos (fora do git)
+
+A ideia da separação: `jogo/mundo.py` não sabe nada de teclado nem de IA, só
+recebe "pula ou não pula" a cada frame. O modo jogador manda o comando vindo do
+teclado e a IA manda o comando vindo da tabela Q. Assim as duas usam exatamente
+as mesmas regras.
 
 ## Funcionalidades exigidas
 
-| Funcionalidade | Onde está no código |
+| Funcionalidade | Onde está |
 |---|---|
-| Subir ao clicar/tocar | `Passaro.pular()`, `tratar_eventos_jogador()` |
-| Gravidade | `Passaro.mover()` |
-| Gerar canos automaticamente | `Jogo.atualizar_canos()`, `Cano.__init__` |
-| Colisão com cano ou chão | `Jogo.verificar_colisao()` |
-| Contador de pontos | `Jogo.atualizar_canos()` |
+| F1 - Subir ao clicar/tocar | `Passaro.pular()` em `jogo/entidades.py`, `ler_comando_jogador()` em `jogo/telas.py` |
+| F2 - Gravidade | `Passaro.mover()` em `jogo/entidades.py` |
+| F3 - Gerar obstáculos automaticamente | `Jogo.atualizar_colunas()` em `jogo/mundo.py` |
+| F4 - Colisão com obstáculo ou chão | `Jogo.verificar_colisao()` em `jogo/mundo.py` |
+| F5 - Contador de pontos | `Jogo.atualizar_colunas()` em `jogo/mundo.py` |
 
-## O que mudou em relação ao projeto base
+## Imagens
 
-- **Modo jogador**: no projeto base só a IA joga.
-- **Punição da morte chega na tabela Q**: no original a atualização era pulada
+`ferramentas/gerar_imagens.py` desenha as 6 imagens em pixel art e salva em
+`assets/imagens`. O jogo amplia 2x ao carregar.
+
+| Arquivo | Tamanho | Conteúdo |
+|---|---|---|
+| passaro_1/2/3.png | 34x24 | pássaro azul com topete, asa em 3 posições (animação) |
+| coluna.png | 52x320 | coluna de metal com faixas laranjas (virada para a de cima) |
+| fundo.png | 288x512 | céu de pôr do sol, estrelas, sol e morros |
+| chao.png | 336x112 | grama e terra, emenda nas bordas para rolar sem corte |
+
+Para mudar o visual basta editar as cores em `PALETA` ou as funções de desenho
+e rodar o script de novo. Se as imagens não existirem, o jogo roda com formas
+simples no lugar.
+
+## Diferenças em relação ao projeto base
+
+Organização:
+
+| Projeto base | Este projeto |
+|---|---|
+| Tudo em `FlappyBird.py` | Separado em `jogo/` e `ia/`, entrada em `main.py` |
+| Pasta `imgs/` com imagens prontas | `assets/imagens/`, geradas por `ferramentas/gerar_imagens.py` |
+| `bird1.png`, `pipe.png`, `base.png`, `bg.png` | `passaro_1.png`, `coluna.png`, `chao.png`, `fundo.png` |
+| Classe `Cano` | Classe `Coluna` |
+| Constantes espalhadas nas classes | Todas em `jogo/config.py` |
+| Nada salvo entre execuções | Recorde e tabela Q em `dados/` |
+
+Jogo:
+
+- Modo jogador (no projeto base só a IA joga), com tela de game over e recorde.
+- Dificuldade progressiva: acelera a cada 10 pontos.
+- Física por velocidade (`v += g; y += v`) no lugar da fórmula por tempo.
+- Colunas seguidas não mudam de altura bruscamente, para ser sempre possível passar.
+
+IA:
+
+- **Punição da morte chega na tabela Q.** No original a atualização era pulada
   no frame da batida (`if rodando:`), então o -1000 nunca era aprendido.
-- **Aprendizado de trás pra frente**: no fim de cada partida a tabela é
-  atualizada do último frame para o primeiro, e se o pássaro bateu por cima o
-  último pulo leva a culpa. Isso acelera muito o aprendizado.
-- **Estado independente da velocidade**: a distância até o cano é medida em
-  frames, não em pixels, então o que a IA aprende vale quando o jogo acelera.
-- **Física por velocidade** (`v += g; y += v`) no lugar da fórmula por tempo.
-- **Canos justos**: a altura de um cano não varia demais em relação ao anterior.
-- **Tabela Q salva em arquivo** e treino sem janela para rodar milhares de
-  partidas em segundos.
+- **Aprendizado de trás pra frente.** No fim de cada partida a tabela é
+  atualizada do último frame para o primeiro. Se o pássaro bateu por cima, o
+  último pulo leva a culpa.
+- **Estado independente da velocidade.** A distância até a coluna é medida em
+  frames, então o que a IA aprende continua valendo quando o jogo acelera.
+- **Tabela Q salva em arquivo** e treino sem janela.
 
-## Resultados nos nossos testes
+## Resultados
 
 | Partidas de treino | Média de pontos | Recorde |
 |---|---|---|
-| 1.000 | ~0 | 3 |
-| 3.000 | ~9 | 33 |
-| 8.000 | ~20 | 55 |
+| 1.000 | ~0 | 4 |
+| 3.000 | ~9 | 38 |
+| 5.000 | ~10 | 41 |
 | ~20.000 | ~50 | 342 |
 
-Para comparação, o projeto base relata recorde entre 15 e 30 pontos.
-A IA melhora bastante mas não fica perfeita: com tabela Q ainda erra de vez
-em quando. Um próximo passo seria Deep Q-Learning (rede neural).
+O projeto base relata recorde entre 15 e 30 pontos. A IA melhora bastante mas
+não fica perfeita: com tabela Q ela ainda erra de vez em quando. Um próximo passo
+seria Deep Q-Learning (rede neural no lugar da tabela).

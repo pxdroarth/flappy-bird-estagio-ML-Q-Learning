@@ -1,5 +1,4 @@
 __pycache__/
 *.pyc
-recorde.txt
-tabela_q.json
-imgs/
+dados/*.json
+dados/*.txt

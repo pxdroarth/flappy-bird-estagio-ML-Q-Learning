@@ -1,0 +1,31 @@
+"""Carrega as imagens de assets/imagens (geradas por ferramentas/gerar_imagens.py)."""
+import os
+
+import pygame
+
+from jogo.config import PASTA_IMAGENS
+
+
+class Imagens:
+    carregadas = False
+    passaro = []
+    coluna = None
+    chao = None
+    fundo = None
+
+    @classmethod
+    def carregar(cls):
+        """Tenta carregar as imagens. Se faltar alguma, o jogo desenha formas simples."""
+        try:
+            def abrir(nome):
+                imagem = pygame.image.load(os.path.join(PASTA_IMAGENS, nome)).convert_alpha()
+                return pygame.transform.scale2x(imagem)
+
+            cls.passaro = [abrir(f"passaro_{i}.png") for i in (1, 2, 3)]
+            cls.coluna = abrir("coluna.png")
+            cls.chao = abrir("chao.png")
+            cls.fundo = abrir("fundo.png")
+            cls.carregadas = True
+        except (FileNotFoundError, pygame.error):
+            print("Imagens não encontradas. Rode: python ferramentas/gerar_imagens.py")
+            cls.carregadas = False
