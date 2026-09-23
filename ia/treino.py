@@ -1,4 +1,6 @@
 """Rotinas que colocam o agente para jogar e aprender."""
+import os
+
 from jogo import config as c
 from jogo.entidades import Passaro
 from jogo.mundo import Jogo
@@ -44,11 +46,15 @@ def treinar_sem_janela(n_partidas):
     for i in range(1, n_partidas + 1):
         jogar_partida(agente, jogo)
         if i % 250 == 0:
-            ultimos = agente.historico_pontos[-250:]
-            print(f"Partida {agente.episodios:6d} | média {sum(ultimos) / len(ultimos):7.1f} | "
-                  f"máx {max(ultimos):4d} | recorde {agente.recorde:4d} | "
-                  f"estados {len(agente.tabela_q)}")
+            print(f"Partida {agente.episodios:6d} | média {agente.media_recente(250):7.1f} | "
+                  f"sucesso {agente.taxa_sucesso(250):5.1f}% | recorde {agente.recorde:4d} | "
+                  f"exploração {agente.epsilon:.4f} | estados {len(agente.tabela_q)}")
         if i % 1000 == 0:
             agente.salvar()  # se parar com Ctrl+C não perde tudo
     agente.salvar()
     print(f"Tabela Q salva em {c.ARQUIVO_TABELA_Q}")
+
+    from ia.graficos import salvar_grafico
+    caminho_grafico = os.path.join(c.PASTA_DADOS, "grafico_treino.png")
+    if salvar_grafico(agente, caminho_grafico):
+        print(f"Gráfico salvo em {caminho_grafico}")

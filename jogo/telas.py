@@ -165,11 +165,14 @@ def modo_ia(tela, relogio):
 
 
 def desenhar_info_ia(tela, agente, jogo, turbo):
-    ultimos = agente.historico_pontos[-100:]
-    media = sum(ultimos) / len(ultimos) if ultimos else 0
-    linhas = [f"Partida: {agente.episodios}", f"Recorde IA: {agente.recorde}",
-              f"Média (100): {media:.1f}", f"Estados: {len(agente.tabela_q)}",
-              f"Velocidade: {jogo.velocidade}", "T turbo | G gráfico | I info | ESC menu"]
+    linhas = [f"Partida: {agente.episodios}",
+              f"Recorde IA: {agente.recorde}",
+              f"Média (100): {agente.media_recente():.1f}",
+              f"Sucesso (>= {c.META_SUCESSO} pts): {agente.taxa_sucesso():.0f}%",
+              f"Exploração (ε): {agente.epsilon:.4f}",
+              f"Estados: {len(agente.tabela_q)}",
+              f"Velocidade: {jogo.velocidade}",
+              "T turbo | G gráfico | I info | ESC menu"]
     if turbo:
         linhas.insert(0, "TURBO (treinando rápido)")
     for i, linha in enumerate(linhas):
@@ -177,23 +180,9 @@ def desenhar_info_ia(tela, agente, jogo, turbo):
 
 
 def mostrar_graficos(agente):
-    try:
-        import matplotlib.pyplot as plt
-    except ImportError:
-        print("Instale o matplotlib para ver os gráficos: pip install matplotlib")
+    from ia.graficos import criar_figura
+    figura = criar_figura(agente)
+    if figura is None:
         return
-    pontos = agente.historico_pontos
-    if not pontos:
-        return
-    janela = 50
-    media = [sum(pontos[max(0, i - janela + 1):i + 1]) / min(i + 1, janela)
-             for i in range(len(pontos))]
-    plt.figure(figsize=(10, 5))
-    plt.plot(pontos, alpha=0.35, label="Pontos por partida")
-    plt.plot(media, label=f"Média móvel ({janela})")
-    plt.xlabel("Partida (desta sessão)")
-    plt.ylabel("Pontos")
-    plt.title("Evolução da IA")
-    plt.legend()
-    plt.tight_layout()
+    import matplotlib.pyplot as plt
     plt.show()

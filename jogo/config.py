@@ -35,6 +35,9 @@ PERIODOS = ["dia", "tarde", "noite"]
 DURACAO_PERIODO = 20   # segundos que cada período dura
 DURACAO_TRANSICAO = 4  # segundos de transição suave no fim de cada período
 
+# Medição de desempenho da IA
+META_SUCESSO = 50  # partida "de sucesso" = chegou a 50 pontos
+
 # Cores das telas
 BRANCO = (255, 255, 255)
 AMARELO = (255, 230, 90)

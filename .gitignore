@@ -1,4 +1,7 @@
 __pycache__/
 *.pyc
+.venv/
 dados/*.json
+dados/*.antigo
 dados/*.txt
+dados/*.png

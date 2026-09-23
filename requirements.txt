@@ -1,2 +1,11 @@
-pygame>=2.0.0
-matplotlib>=3.3.0
+# Dependências do Flappy Bird (testado em Python 3.10, 3.11, 3.12, 3.13 e 3.14)
+#
+# pygame (obrigatório): o pygame oficial só tem instalador até o Python 3.13.
+# No Python 3.14 ou mais novo o pip instala o pygame-ce, que é compatível
+# (o código continua usando "import pygame"). Não instale os dois juntos.
+pygame>=2.1,<3 ; python_version < "3.14"
+pygame-ce>=2.5,<3 ; python_version >= "3.14"
+
+# matplotlib (opcional): só para os gráficos de desempenho da IA.
+# Sem ele o jogo funciona normalmente.
+matplotlib>=3.5

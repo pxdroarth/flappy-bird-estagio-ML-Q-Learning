@@ -8,7 +8,18 @@ Uso:
 """
 import sys
 
-import pygame
+VERSAO_MINIMA = (3, 10)
+
+if sys.version_info < VERSAO_MINIMA:
+    sys.exit(f"Python {sys.version.split()[0]} é antigo demais. "
+             f"Use Python {VERSAO_MINIMA[0]}.{VERSAO_MINIMA[1]} ou mais novo (recomendado: 3.12).")
+
+try:
+    import pygame
+except ImportError:
+    sys.exit("O pygame não está instalado. Rode, dentro da pasta do projeto:\n"
+             "    python -m pip install -r requirements.txt\n"
+             "Diagnóstico completo: python ferramentas/verificar_ambiente.py")
 
 from jogo import config as c
 from jogo.imagens import Imagens
